@@ -1,14 +1,14 @@
- #define NUMBER_OF_TOUCH_PINS 5
+ #define NUMBER_OF_TOUCH_PINS 8
  
  // set pin numbers
-const int CtouchPin = 4; 
+const int CtouchPin = 7; 
 const byte CNoteCode = 97;
 
-const int touchPins[NUMBER_OF_TOUCH_PINS] = {4, 32, 0, 33, 27};
-const int noteCodes[NUMBER_OF_TOUCH_PINS] = {99, 97, 95, 93, 91};
+const int touchPins[NUMBER_OF_TOUCH_PINS] = {32, 33, 14, 12, 13, 4, 0, 27};
+const int noteCodes[NUMBER_OF_TOUCH_PINS] = {90, 91, 92, 93, 94, 95, 96, 97};
 int touchValues[NUMBER_OF_TOUCH_PINS];
-int pinsCounter[NUMBER_OF_TOUCH_PINS] = {0, 0, 0, 0, 0};
-bool pinFlags[NUMBER_OF_TOUCH_PINS] = {false, false, false, false, false};
+int pinsCounter[NUMBER_OF_TOUCH_PINS] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool pinFlags[NUMBER_OF_TOUCH_PINS] = {false, false, false, false, false, false, false};
 const int EtouchPin = 2;
 const byte ENoteCode = 99;
 
