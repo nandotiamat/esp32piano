@@ -1,7 +1,7 @@
 #define NUMBER_OF_TOUCH_PINS 8
 #include <WiFi.h>
 #include <HTTPClient.h>
-\
+
 const char *ssid     = "iPhone di Emilio"; //Enter the router name
 const char *password = "emiliotirozzi"; //Enter the router password
 

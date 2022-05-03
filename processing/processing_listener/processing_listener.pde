@@ -1,6 +1,8 @@
 import processing.serial.*;
 import ddf.minim.*;
+import javax.sound.sampled.*;
 
+AudioFormat format;
 Serial myPort;
 String portName;
 Minim minim; 
@@ -67,6 +69,7 @@ void load_sound_library(AudioPlayer audioPlayers[]) {
 }
 
 void init() {
+  format  = AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100.0, 16, 2, 4, 44100.0, false);
   portName = Serial.list()[0];
   myPort = new Serial(this, portName, 9600);
   NUMBER_OF_BYTES = 8;
