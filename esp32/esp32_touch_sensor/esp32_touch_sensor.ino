@@ -32,9 +32,9 @@ void setup() {
     delay(5000);
     Serial.println("Connecting to WiFi..");
   }
-  Serial.println("");
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
+   Serial.println("");
+   Serial.print("Connected to WiFi network with IP Address: ");
+   Serial.println(WiFi.localIP());
 
   
 }

@@ -8,17 +8,15 @@
         if (!$conn) {
             die("Connessione fallita");
         } 
-
-        echo "Connessione riuscita<br>";
-
         $result = mysqli_query($conn, $query);
         
         if(!$result) {
             exit("Errore: impossibile eseguire la query" . mysqli_error($conn));
         }
-        echo "Query eseguita con successo.<br>";
 
         mysqli_close($conn);
+        
+        return $result;
     }
 
 
@@ -46,6 +44,32 @@
             echo $decoded_json[$_GET["pin"]];
         } else {
             echo 'Errore, pin non valido';
+        }
+    }
+
+    if(isset($_GET["type"])) {
+
+        if ($_GET["type"] == "get_latest_json") {
+            //continua da qua
+            $query = "SELECT `datajson` FROM `letture` WHERE ";
+        }
+        if ($_GET["type"] == "fetch_notes") {
+            $query = "SELECT `PinID`, `time` FROM `letture`";
+            $result = queryToDB($query);
+            echo '
+            <table border=2>
+                <tr> 
+                    <th>PinID</th>
+                    <th>time</th>
+                </tr>
+            ';
+            while($row = mysqli_fetch_array($result)) {
+                echo '<tr>';
+                echo '<td>' .$row['PinID']. '</td>';
+                echo '<td>' .$row['time']. '</td>';
+                echo '</tr>';
+            }
+            echo '</table>';
         }
     }
 ?>
