@@ -70,29 +70,42 @@ curl_close($c);
         $.getJSON("pinValuesStats.json", addData);
     }
 </script>
+<!DOCTYPE html>
 <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+        <title>Nicoke Webpage</title>
+    </head>
 
-<head>
-    <title>Nicoke Webpage</title>
-</head>
-
-<body>
-    <div>
-        <form id="registerform" action="http://localhost:5050" method="POST">
-            <label for="library">Scegli la libreria di suoni che vuoi utilizzare:</label>
-            <input type="text" name="library">
-            <input type="submit">
-            <div>
-                <h3>Ultimi suoni riprodotti:</h3>
-                <?php
-                echo $notes_table;
-                ?>
+    <body class="has-background-danger">
+        <div class="container p-6">
+            <div class="box">    
+                <div class="has-text-centered">
+                    <img src="https://fontmeme.com/permalink/220507/130e24c61af4b747662ecf390743f51e.png" />
+                    <div class="p-4">
+                        <form id="registerform" action="http://localhost:5050" method="POST">
+                            <label for="library">Scegli la libreria di suoni che vuoi utilizzare:</label>
+                            <input type="text" name="library">
+                            <input type="submit">
+                        </form>
+                    </div>
+                </div>
+                <div class="is-flex is-flex-direction-row is-justify-content-space-between is-align-items-top" >
+                    <div class="is-flex is-flex-direction-column">
+                        <div id="columnChartContainer" style="height: 250px"></div>    
+                        <div id="pieChartContainer" style="height: 250px"></div>
+                    </div>
+                    <div>
+                        <h3 class="is-size-3">Ultimi suoni riprodotti:</h3>
+                        <?php
+                        echo $notes_table;
+                        ?>
+                    </div>
+                </div>
             </div>
-        </form>
-    </div>
-    <div id="columnChartContainer" style="height: 300px; width: 75%;"></div>
-    <div id="pieChartContainer" style="height: 300px; width: 75%;"></div>
+        </div>
 
-</body>
+    </body>
 
 </html>

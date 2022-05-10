@@ -7,6 +7,10 @@ const char *password = "emiliotirozzi"; //Enter the router password
 
 const char* post_link = "http://172.20.10.8:80/esp32piano/server.php";
 
+int buttonPin = 21;
+int buttonLastState = HIGH;
+int buttonCurrentState;
+
 WiFiClient client;
 
 // const int pushButton = 21;
@@ -22,21 +26,20 @@ bool pinFlags[NUMBER_OF_TOUCH_PINS] = {false, false, false, false, false, false,
 // change with your threshold value
 const int threshold = 20;
 
-void setup() {
-
-
-  Serial.begin(9600);
-
+void connectToWiFi() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) { //Check for the connection
     delay(5000);
     Serial.println("Connecting to WiFi..");
   }
-   Serial.println("");
-   Serial.print("Connected to WiFi network with IP Address: ");
-   Serial.println(WiFi.localIP());
-
-  
+  Serial.println("");
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+void setup() {
+  Serial.begin(9600);
+  // connectToWiFi();
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 }
 
 void send_to_server(String postData) {
@@ -61,7 +64,6 @@ void send_to_server(String postData) {
 
 void loop() {
 
-
   for (int j = 0; j < NUMBER_OF_TOUCH_PINS; j++) {
 
     touchValues[j] = touchRead(touchPins[j]);
@@ -79,5 +81,14 @@ void loop() {
       pinsCounter[j] = 0;
     }
   }
+
+  buttonCurrentState = digitalRead(buttonPin);
+
+  if (buttonLastState == HIGH && buttonCurrentState == LOW) {
+    Serial.println("implement post to python webserver for changing octave");
+  }
+  
+  buttonLastState = buttonCurrentState; 
+  
   delay(10);
 }

@@ -57,7 +57,7 @@
             $query = "SELECT `PinID`, `time` FROM `letture`";
             $result = queryToDB($query);
             echo '
-            <table border=2>
+            <table class="table">
                 <tr> 
                     <th>PinID</th>
                     <th>time</th>
