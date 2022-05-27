@@ -22,11 +22,11 @@
 
 
     if(isset($_POST["pin"])) {
-        $pin_json = file_get_contents('pinValuesStats.json');
+        $pin_json = file_get_contents('json/pinValuesStats.json');
         $decoded_json = json_decode($pin_json, true);
         if (isset($decoded_json[$_POST["pin"]])) {
             $decoded_json[$_POST["pin"]]++;
-            $f = fopen("pinValuesStats.json", "w");
+            $f = fopen("json/pinValuesStats.json", "w");
             fwrite($f, json_encode($decoded_json));
             fclose($f);
             $query = "INSERT INTO `letture`(`ID`, `PinID`, `time`, `datajson`) VALUES (NULL, ".$_POST["pin"].", current_timestamp(), '".json_encode($decoded_json)."')";
@@ -38,7 +38,7 @@
     }
 
     if(isset($_GET["pin"])) {
-        $pin_json = file_get_contents('pinValuesStats.json');
+        $pin_json = file_get_contents('json/pinValuesStats.json');
         $decoded_json = json_decode($pin_json, true);
         if (isset($decoded_json[$_GET["pin"]])) {
             echo $decoded_json[$_GET["pin"]];
@@ -50,11 +50,16 @@
     if(isset($_GET["type"])) {
 
         if ($_GET["type"] == "get_latest_json") {
-            //continua da qua
-            $query = "SELECT `datajson` FROM `letture` WHERE ";
+            $query = "SELECT `datajson` FROM `letture` ORDER BY `ID` DESC LIMIT 1";
+            $result = queryToDB($query);
+            while ($row = mysqli_fetch_array($result)) {
+                $f = fopen("json/pinValuesStats.json", "w");
+                fwrite($f, $row["datajson"]);
+                fclose($f);
+            }
         }
         if ($_GET["type"] == "fetch_notes") {
-            $query = "SELECT `PinID`, `time` FROM `letture`";
+            $query = "SELECT `PinID`, `time` FROM `letture` ORDER BY `ID` DESC LIMIT 10";
             $result = queryToDB($query);
             echo '
             <table class="table">

@@ -4,7 +4,6 @@
 
 const char *ssid     = "iPhone di Emilio"; //Enter the router name
 const char *password = "emiliotirozzi"; //Enter the router password
-
 const char* post_link = "http://172.20.10.8:80/esp32piano/server.php";
 
 int buttonPin = 21;
@@ -13,11 +12,10 @@ int buttonCurrentState;
 
 WiFiClient client;
 
-// const int pushButton = 21;
-
-
-const int touchPins[NUMBER_OF_TOUCH_PINS] = {32, 33, 12, 14, 13, 4, 15, 0};
-const int noteCodes[NUMBER_OF_TOUCH_PINS] = {90, 91, 92, 93, 94, 95, 96, 97}; // sono i bytes associati al tocco di ciascun pin
+// const int touchPins[NUMBER_OF_TOUCH_PINS] = {32, 33, 12, 14, 13, 4, 15, 0};
+const int touchPins[NUMBER_OF_TOUCH_PINS] = {32, 33, 14, 12, 13, 4, 0, 15};
+// const int noteCodes[NUMBER_OF_TOUCH_PINS] = {90, 91, 92, 93, 94, 95, 96, 97}; // sono i bytes associati al tocco di ciascun pin
+const int noteCodes[NUMBER_OF_TOUCH_PINS] = {0, 1, 2, 3, 4, 5, 6, 7}; // sono i bytes associati al tocco di ciascun pin
 int touchValues[NUMBER_OF_TOUCH_PINS]; // array di appoggio per salvare i valori letti dai pin ad ogni iterazione
 int pinsCounter[NUMBER_OF_TOUCH_PINS] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool pinFlags[NUMBER_OF_TOUCH_PINS] = {false, false, false, false, false, false, false};
@@ -38,8 +36,8 @@ void connectToWiFi() {
 }
 void setup() {
   Serial.begin(9600);
-  // connectToWiFi();
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  connectToWiFi();
+  pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void send_to_server(String postData) {
@@ -52,7 +50,7 @@ void send_to_server(String postData) {
     int httpCode = http.POST(postData);   //Send the request
     //Serial.println(httpCode);   //Print HTTP return code
     http.end();  //Close connection
-    Serial.println(postData);
+    // Serial.println(postData);
   }
 
   else
@@ -61,6 +59,9 @@ void send_to_server(String postData) {
   }
 
 }
+
+
+
 
 void loop() {
 
@@ -73,7 +74,7 @@ void loop() {
       if (pinsCounter[j] > 3 && !pinFlags[j]) {
         pinFlags[j] = true;
         Serial.write(noteCodes[j]);
-        send_to_server("pin = " + String(touchPins[j]));
+        // send_to_server("pin=" + String(touchPins[j]));
       }
     }
     else {
@@ -85,10 +86,9 @@ void loop() {
   buttonCurrentState = digitalRead(buttonPin);
 
   if (buttonLastState == HIGH && buttonCurrentState == LOW) {
-    Serial.println("implement post to python webserver for changing octave");
+    Serial.write(9);
   }
   
   buttonLastState = buttonCurrentState; 
-  
   delay(10);
 }

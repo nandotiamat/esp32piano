@@ -1,36 +1,86 @@
 import cgi
+from ctypes.wintypes import BYTE
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from lib2to3.pgen2.token import NUMBER
+from turtle import pos
+import requests
+from requests.structures import CaseInsensitiveDict
 from urllib.parse import parse_qs
 import playsound
 import serial
 import threading
 import json 
 
-NUMBER_OF_BYTES = 8
-loadedLibrarySoundsPath = []
 
+TOUCH_PINS = [32, 33, 14, 12, 13, 4, 0, 15];
+NUMBER_OF_BYTES = 8
+CHANGE_OCTAVE_BYTE_VALUE = 9
+postQueue = []
+loadedLibrarySoundsPath = []
+currentOctave = 5
+currentLibrary = "guitar"
 libraries = {}
 with open("libraries.json") as librariesJson:
     libraries = json.loads(librariesJson.read())
     
-serialPort = serial.Serial(port = "COM4", baudrate=9600, bytesize=8, timeout=2, stopbits=serial.STOPBITS_ONE)
+try: 
+    serialPort = serial.Serial(port = "COM3", baudrate=9600, bytesize=8, timeout=2, stopbits=serial.STOPBITS_ONE)
+except: 
+    print("Impossibile aprire la porta seriale COM3")
+    exit(1)
+def changeOctave():
+    global currentOctave
+    if (currentOctave + 1 in libraries[currentLibrary]["octave"]):
+        currentOctave = currentOctave + 1
+        loadLibrary(currentLibrary, currentOctave)
+    else : 
+        currentOctave = libraries[currentLibrary]["octave"][0]
+        loadLibrary(currentLibrary, currentOctave)
 
 def loadLibrary(libraryName, octave):
+    global currentLibrary 
+    global currentOctave
+    print(libraryName + " e " + str(octave))
+    currentLibrary = libraryName
+    currentOctave = octave
     loadedLibrarySoundsPath.clear()
-    octaveValue = octave
     for i in range(0,NUMBER_OF_BYTES):
         if (i == NUMBER_OF_BYTES - 1):
-            octaveValue+=1
-            print("octaveValue: " + str(octaveValue))
-        loadedLibrarySoundsPath.append(libraryName + "/" + libraries[libraryName]["notes"][i] + str(octaveValue) + ".wav")
+            if octave is not None : 
+                octave+=1
+        loadedLibrarySoundsPath.append(libraryName + "/" + libraries[libraryName]["notes"][i] + ( str(octave) if ( octave is not None ) else "") + ".wav")
+
+def secondLoop():
+    loading = False
+    while True:
+        if len(postQueue) > 0 and loading is not True:
+            byte = postQueue.pop()
+            loading = True
+            try:
+                headers = CaseInsensitiveDict()
+                headers["Connection"] = "keep-alive"
+                headers["Keep-Alive"] = "timeout=5, max=100"
+                r = requests.post("http://localhost:80/esp32piano/server.php", headers=headers, data={"pin": TOUCH_PINS[byte]})
+                print("HTTP RESPONSE STATUS CODE: " + str(r.status_code))
+                loading = False
+            except Exception as e:
+                print(e)
 
 def mainLoop():
     while True:
         if serialPort.in_waiting > 0:
-            byte = int(serialPort.read(1), 8)
+            byte = int.from_bytes(serialPort.read(1), "big")
+            if byte not in range(0,NUMBER_OF_BYTES+1):
+                pass
             print(byte)
-            playsound.playsound(loadedLibrarySoundsPath[byte], False)
+            postQueue.append(byte)
+            if byte == CHANGE_OCTAVE_BYTE_VALUE:
+                changeOctave()
+            else :
+                print("byte received: " + str(byte) + " current instrument: " + currentLibrary + " path: " + loadedLibrarySoundsPath[byte] + " octave: " + (str(currentOctave) if not None else "nessuna ottava"))
+                try:
+                    playsound.playsound(loadedLibrarySoundsPath[byte], False)
+                except:
+                    print("non riesco a riprodurre il suono")
     
 
 def webServerLoop():
@@ -64,8 +114,12 @@ class MyServer(BaseHTTPRequestHandler):
             postvars = parse_qs(self.rfile.read(length).decode('utf-8'))
 
         if "library" in postvars:
+
             if postvars["library"][0] in libraries:
-                loadLibrary(postvars["library"][0])
+                if libraries[postvars["library"][0]]["octave"] is not None:
+                    loadLibrary(postvars["library"][0], libraries[postvars["library"][0]]["octave"][0])
+                else: 
+                    loadLibrary(postvars["library"][0], None)
                 self.send_response(200)
                 self.send_header('Content-type', 'text/html')
                 self.end_headers()
@@ -95,10 +149,12 @@ class MyServer(BaseHTTPRequestHandler):
      
 webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
-loadLibrary("guitar", 5)
+loadLibrary(currentLibrary, currentOctave)
 
 t1 = threading.Thread(target=mainLoop)
 t1.start()
+t2 = threading.Thread(target=secondLoop)
+t2.start()
 try:   
     webServer.serve_forever()
 except KeyboardInterrupt:
@@ -109,3 +165,5 @@ try:
 except: 
   print("Non sono riuscito a chiudere la seriale.")
 print("Server stopped.")
+t1.join()
+t2.join()

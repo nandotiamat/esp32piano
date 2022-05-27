@@ -1,11 +1,18 @@
 <?php
 $c = curl_init('http://localhost:80/esp32piano/server.php?type=fetch_notes');
+$c2 = curl_init('http://localhost:80/esp32piano/server.php?type=get_latest_json');
 curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
 $notes_table = curl_exec($c);
+
 if (curl_error($c))
     die(curl_error($c));
+
+curl_exec($c2);
+if (curl_error($c2))
+    die(curl_error($c2));
 //$status = curl_getinfo($c, CURLINFO_HTTP_CODE);
 curl_close($c);
+curl_close($c2);
 ?>
 
 <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
@@ -13,9 +20,7 @@ curl_close($c);
 
 <script>
     window.onload = function() {
-
         var dataPoints = [];
-
         var columnChart = new CanvasJS.Chart("columnChartContainer", {
             animationEnabled: true,
             theme: "light2",
@@ -53,11 +58,11 @@ curl_close($c);
                 dataPoints: dataPoints
             }]
         });
-
-
+        
         function addData(data) {
             var dps = data;
             for ($i in dps) {
+                console.log(dps[$i]);
                 dataPoints.push({
                     label: [$i],
                     y: dps[$i],
@@ -66,8 +71,7 @@ curl_close($c);
             columnChart.render();
             pieChart.render();
         }
-
-        $.getJSON("pinValuesStats.json", addData);
+        $.getJSON('json/pinValuesStats.json', addData);
     }
 </script>
 <!DOCTYPE html>
@@ -97,7 +101,7 @@ curl_close($c);
                         <div id="pieChartContainer" style="height: 250px"></div>
                     </div>
                     <div>
-                        <h3 class="is-size-3">Ultimi suoni riprodotti:</h3>
+                        <h3 class="is-size-3">Ultimi 10 tocchi:</h3>
                         <?php
                         echo $notes_table;
                         ?>
